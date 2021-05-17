@@ -46,7 +46,7 @@ func queryTianqiApi(code string, hours int) {
   // 接口文档：https://www.tianqiapi.com/index/doc?version=v1
   var api2 = "https://www.tianqiapi.com/api?version=v1&appid=62864148&appsecret=XQj5TooL&cityid="
 
-  out, err := exec.Command("sh", "-c", "wget -qO - '" + api2 + code + "'").Output();
+  out, err := exec.Command("sh", "-c", "wget --no-check-certificate -qO - '" + api2 + code + "'").Output();
   if err != nil {
     fmt.Println("查询失败，请检查网络连接")
     return
