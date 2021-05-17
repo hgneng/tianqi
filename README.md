@@ -1,2 +1,2 @@
 # tianqi
-a command line tool to query weather report in China
+A command line tool to query weather report in China.
