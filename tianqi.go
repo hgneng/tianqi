@@ -104,12 +104,12 @@ func queryTianqiApi(code string, hours int) {
 
 func queryXiaomiApi(code string) {
   // 小米接口（无限制）
-  var api = "http://weatherapi.market.xiaomi.com/wtr-v2/weather?imei=e32c8a29d0e8633283737f5d9f381d47&device=HM2013023&miuiVersion=JHBCNBD16.0&modDevice=&source=miuiWeatherApp&cityId="
+  var api = "https://weatherapi.market.xiaomi.com/wtr-v2/weather?imei=e32c8a29d0e8633283737f5d9f381d47&device=HM2013023&miuiVersion=JHBCNBD16.0&modDevice=&source=miuiWeatherApp&cityId="
 
-  out, err := exec.Command("sh", "-c", "wget -qO - '" + api + code + "'").Output();
+  out, err := exec.Command("bash", "-c", "wget -qO - '" + api + code + "'").Output();
   if err != nil {
     fmt.Println("查询失败，请检查网络连接")
-  } 
+  }
 
   if len(out) > 0 {
     var data interface{}
@@ -155,7 +155,7 @@ func getCityCode(city string) string {
   if len(out) > 0 {
     items := strings.Split(string(out), ":")
     if len(items) == 2 {
-      return strings.TrimRight(strings.TrimLeft(items[1], "\""), "\"")
+      return strings.TrimRight(strings.TrimLeft(items[1], "\""), "\"\n\r")
     }
   }
 
