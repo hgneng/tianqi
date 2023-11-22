@@ -132,15 +132,15 @@ func queryXiaomiApi(code string) {
     fmt.Println("当前温度" + realtimeMap["temp"].(string) +
          "摄氏度，湿度百分之" + strings.Replace(realtimeMap["SD"].(string), "%", "", 1) +
          "，" + realtimeMap["weather"].(string) +
-         "。天气预报：今天，" + forecastMap["weather1"].(string) + "，" +
+         "。\n天气预报：\n今天，" + forecastMap["weather1"].(string) + "，" +
          strings.Replace(strings.Replace(forecastMap["temp1"].(string), "℃~", "到", 1), "℃", "摄氏度", 1) +
-         "；明天，" + forecastMap["weather2"].(string) + "，" +
+         "；\n明天，" + forecastMap["weather2"].(string) + "，" +
          strings.Replace(strings.Replace(forecastMap["temp2"].(string), "℃~", "到", 1), "℃", "摄氏度", 1) +
-         "；后天，" + forecastMap["weather3"].(string) + "，" +
+         "；\n后天，" + forecastMap["weather3"].(string) + "，" +
          strings.Replace(strings.Replace(forecastMap["temp3"].(string), "℃~", "到", 1), "℃", "摄氏度", 1) +
-         "；周" + day4 + "，" + forecastMap["weather4"].(string) + "，" +
+         "；\n周" + day4 + "，" + forecastMap["weather4"].(string) + "，" +
          strings.Replace(strings.Replace(forecastMap["temp4"].(string), "℃~", "到", 1), "℃", "摄氏度", 1) +
-         "；周" + day5 + "，" + forecastMap["weather5"].(string) + "，" +
+         "；\n周" + day5 + "，" + forecastMap["weather5"].(string) + "，" +
          strings.Replace(strings.Replace(forecastMap["temp5"].(string), "℃~", "到", 1), "℃", "摄氏度", 1))
   }
 }
