@@ -32,7 +32,7 @@ func main() {
 
   if len(code) > 0 {
     if hours > 0 {
-      queryTianqiApi(code, hours);
+      queryQWeatherApi(code, hours);
     } else {
       queryXiaomiApi(code);
     }
@@ -41,10 +41,53 @@ func main() {
   }
 }
 
+// 和风天气：https://www.qweather.com/
+  // 价格表：https://dev.qweather.com/docs/finance/subscription/#comparison
+  // 文档：https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/
+  // 收费API：https://api.qweather.com/v7/weather/24h?{请求参数}
+  // 免费API：https://devapi.qweather.com/v7/weather/24h?key=bf673f068c2344dfa3bcf491cd914ef7&location=101010100
+  // 免费API每天额度1000
+  // key = bf673f068c2344dfa3bcf491cd914ef7
+func queryQWeatherApi(code string, hours int) {
+  var api = "https://devapi.qweather.com/v7/weather/24h?key=bf673f068c2344dfa3bcf491cd914ef7&location="
+  out, err := exec.Command("sh", "-c", "curl --compressed '" + api + code + "'").Output();
+  if err != nil {
+    fmt.Println("查询失败，请检查网络连接")
+    return
+  }
+
+  if hours > 24 {
+    fmt.Println("暂时只支持查询未来24小时的具体天气")
+    return
+  }
+
+  if len(out) > 0 {
+    var ret interface{}
+    err := json.Unmarshal(out, &ret)
+    if err != nil {
+      fmt.Println("json error:", err)
+      return
+    }
+
+    count := 0
+    retMap := ret.(map[string]interface{})
+    dataArray := retMap["hourly"].([]interface{})
+    for ; count < hours; count++ {
+      hourMap := dataArray[count].(map[string]interface{})
+      var hour = hourMap["fxTime"].(string)[11:13]
+      fmt.Println(hour + "点：" +
+          hourMap["text"].(string) + "，" +
+          hourMap["temp"].(string) + "度")
+    }
+  }
+}
+
 func queryTianqiApi(code string, hours int) {
   // 可精确到小时的接口（每日限300次，付费2000元后终身每日10万）
   // 接口文档：https://www.tianqiapi.com/index/doc?version=v1
   var api2 = "https://www.tianqiapi.com/api?version=v1&appid=62864148&appsecret=XQj5TooL&cityid="
+  //var api2 = "http://v0.yiketianqi.com/api?version=v1&appid=62864148&appsecret=XQj5TooL&cityid="
+  //fmt.Println(api2 + code)
 
   out, err := exec.Command("sh", "-c", "wget --no-check-certificate -qO - '" + api2 + code + "'").Output();
   if err != nil {
