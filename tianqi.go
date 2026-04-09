@@ -15,7 +15,7 @@ var cityCodes = make(map[string]string)
 
 func main() {
   if len(os.Args) < 2 {
-    fmt.Println("天气查询命令，版本2.0")
+    fmt.Println("天气查询命令，版本3.0")
     fmt.Println("请提供城市名称或拼音，例如\"北京\"或\"beijing\"")
     fmt.Println("后面再加一个数字可以查询未来数小时的具体天气，例如：`tianqi guangzhou 6`可查询未来6小时的天气。")
     fmt.Println("作者：黄冠能(hgneng at gmail.com)")
@@ -32,9 +32,10 @@ func main() {
 
   if len(code) > 0 {
     if hours > 0 {
-      queryQWeatherApi(code, hours);
+      queryQWeatherHourApi(code, hours);
     } else {
-      queryXiaomiApi(code);
+      queryQWeatherNowApi(code);
+      queryQWeatherDayApi(code, 3);
     }
   } else {
     fmt.Println("没有找到城市" + city)
@@ -42,13 +43,89 @@ func main() {
 }
 
 // 和风天气：https://www.qweather.com/
-  // 价格表：https://dev.qweather.com/docs/finance/subscription/#comparison
-  // 文档：https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/
-  // 收费API：https://api.qweather.com/v7/weather/24h?{请求参数}
-  // 免费API：https://devapi.qweather.com/v7/weather/24h?key=bf673f068c2344dfa3bcf491cd914ef7&location=101010100
-  // 免费API每天额度1000
-  // key = bf673f068c2344dfa3bcf491cd914ef7
-func queryQWeatherApi(code string, hours int) {
+// 文档：https://dev.qweather.com/docs/api/weather/weather-daily-forecast/
+// 免费API每月额度5万
+// key = bf673f068c2344dfa3bcf491cd914ef7
+func queryQWeatherDayApi(code string, days int) {
+  var api = "https://devapi.qweather.com/v7/weather/" + strconv.Itoa(days) + "d?key=bf673f068c2344dfa3bcf491cd914ef7&location="
+  out, err := exec.Command("sh", "-c", "curl --compressed '" + api + code + "'").Output();
+  if err != nil {
+    fmt.Println("查询失败，请检查网络连接")
+    return
+  }
+
+  if days > 30 {
+    fmt.Println("暂时只支持查询未来30天的具体天气")
+    return
+  }
+
+  if len(out) > 0 {
+    var ret interface{}
+    err := json.Unmarshal(out, &ret)
+    if err != nil {
+      fmt.Println("json error:", err)
+      return
+    }
+
+    retMap := ret.(map[string]interface{})
+    dataArray := retMap["daily"].([]interface{})
+    fmt.Println("天气预报：")
+    for i := 0; i < days; i++ {
+      if i == 0 {
+        fmt.Print("今天")
+      } else if i == 1 {
+        fmt.Print("明天")
+      } else if i == 2 {
+        fmt.Print("后天")
+      } else {
+        fmt.Print("第" + strconv.Itoa(i + 1) + "天")
+      }
+
+      forecastMap := dataArray[i].(map[string]interface{})
+      fmt.Println(forecastMap["textDay"].(string) + "，" +
+         forecastMap["tempMin"].(string) + "到" + forecastMap["tempMax"].(string) + "摄氏度")
+    }
+  }
+}
+
+// 和风天气：https://www.qweather.com/
+// 文档：https://dev.qweather.com/docs/api/weather/weather-now/
+// 免费API每月额度5万
+// key = bf673f068c2344dfa3bcf491cd914ef7
+func queryQWeatherNowApi(code string) {
+  var api = "https://devapi.qweather.com/v7/weather/now?key=bf673f068c2344dfa3bcf491cd914ef7&location="
+  out, err := exec.Command("sh", "-c", "curl --compressed '" + api + code + "'").Output();
+  if err != nil {
+    fmt.Println("查询失败，请检查网络连接")
+    return
+  }
+
+  if len(out) > 0 {
+    var ret interface{}
+    err := json.Unmarshal(out, &ret)
+    if err != nil {
+      fmt.Println("json error:", err)
+      return
+    }
+
+    retMap := ret.(map[string]interface{})
+    nowMap := retMap["now"].(map[string]interface{})
+    fmt.Println("当前天气" + nowMap["text"].(string) +
+      "温度" + nowMap["temp"].(string) +
+      "摄氏度，湿度百分之" + nowMap["humidity"].(string) +
+      "，风力" + nowMap["windScale"].(string) +
+      "级。")
+  }
+}
+
+// 和风天气：https://www.qweather.com/
+// 价格表：https://dev.qweather.com/docs/finance/subscription/#comparison
+// 文档：https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/
+// 收费API：https://api.qweather.com/v7/weather/24h?{请求参数}
+// 免费API：https://devapi.qweather.com/v7/weather/24h?key=bf673f068c2344dfa3bcf491cd914ef7&location=101010100
+// 免费API每天额度1000
+// key = bf673f068c2344dfa3bcf491cd914ef7
+func queryQWeatherHourApi(code string, hours int) {
   var api = "https://devapi.qweather.com/v7/weather/24h?key=bf673f068c2344dfa3bcf491cd914ef7&location="
   out, err := exec.Command("sh", "-c", "curl --compressed '" + api + code + "'").Output();
   if err != nil {
